@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Mosquitto Websockets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="mqttws31.min.js" type="text/javascript"></script>
+    <script type="text/javascript" language="javascript">
+
+    if ( window.debug != undefined ) {
+        console.log = window.debug;
+    }
+
+    var FULL_SCENARIO = false;
+    var timer_publishing;
+    var timer_emulation;
+
+    var mqtt;
+
+    /**
+     * @note host means the name of MQTT broker server like ip or domain
+     */
+    var host = "192.168.0.23";
+    var port = 2002;
+
+    /**
+     * @note topic means path to do publishing
+     */
+    var topic = "/hello/world";
+    var message_counter = 1;
+
+    function onConnect(){
+        console.log("Connected");
+        timer_publishing = setInterval(function () {
+            Publish("Hello World");
+        }, 5000);
+    }
+
+    function onConnectionLost(msg){
+        console.log("ConnectionLost , " + "errorcode: "+ msg.errorCode +", message : "+ msg.errorMessage);
+    }
+
+    function onDisconnectedPublishing() {
+        console.log("onDisconnectedPublishing");
+    }
+
+    function onMessageDelivered(msg){
+        console.log("MessageDelivered and Disconnect (message : " + msg + ")");
+        console.log("");
+        console.log("");
+
+        /**
+         * @note We don't need to disconnect since it will be diconnected when reconnection
+         * since we have same id of client
+         */
+        // mqtt.disconnect();
+    }
+
+    function onMessageArrived(msg){
+        console.log("onMessageArrived (message : " + msg + ")");
+    }
+
+    function Publish(msg) {
+        if ( FULL_SCENARIO == true ) clearInterval(timer_publishing);
+        console.log("Publishing ... (" + msg + ") (" + message_counter + ") to " + topic );
+        message_counter++;
+        message = new Paho.MQTT.Message(msg);
+        message.destinationName = topic;
+        message.topic = topic;
+
+        console.log("Message topic : " + message.topic);
+        console.log("Message qos : " + message.qos);
+        console.log("Message payload string : " + message.payloadString);
+        console.log("Message payload bytes : " + message.payloadBytes);
+        console.log("Message retained : " + message.retained);
+
+        mqtt.send(message);
+    }
+
+    function Connect(){
+        console.log("Connecting to " + host + " " + port);
+        mqtt = new Paho.MQTT.Client(host, port, "uid-tehokang-stb");
+        var options = {
+            timeout:10,
+            mqttVersion:4,
+            onSuccess:onConnect,
+            onFailure:onConnectionLost,
+            // keepAliveInterval:1200,
+        };
+        mqtt.disconnectedPublishing = false;
+        mqtt.onMessageArrived = onMessageArrived;
+        mqtt.onMessageDelivered = onMessageDelivered;
+        mqtt.connect(options);
+    }
+
+    </script>
+  </head>
+  <body>
+    <h1> Mosquitto Websockets </h1>
+    <script type="text/javascript" language="javascript">
+    function StartEmulation(){
+        console.log("###########################################");
+        console.log("# Please wait, emulation will get started #");
+        console.log("###########################################");
+
+        if ( FULL_SCENARIO == false ) {
+            Connect();
+        } else {
+            if ( timer_emulation != null) {
+                clearInterval(timer_emulation);
+                timer_emulation = null;
+                message_counter = 0;
+            }
+            timer_emulation = setInterval(function () {
+                Connect();
+            }, 10000);
+        }
+    }
+
+    function StopEmulation(){
+        if ( timer_emulation != null ) {
+            clearInterval(timer_emulation);
+            timer_emulation = null;
+            message_counter = 0;
+        }
+    }
+
+    StartEmulation();
+    </script>
+  </body>
+</html>
