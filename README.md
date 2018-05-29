@@ -98,7 +98,7 @@ port = 2002;
 
 After them, you can open index.html on your browser like chrome.
 
-## 3. conclusion
+## 3. Conclusion
 
 Finally we could find main reason who are making disconnection. The websocket of MQTT paho javascript library is sending data with wrong hexadecimal at the specific time, for example, a value of first byte of data sending is changed as wrong right before websocket.send(data). I tried to find suspect who are changing the value and found it was a browser which runs client. 
 
