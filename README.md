@@ -98,8 +98,12 @@ port = 2002;
 
 After them, you can open index.html on your browser like chrome.
 
-## 3. Known issue
+## 3. conclusion
 
-Finally we could find main reason who are making disconnection. The suspect was browser which runs client. 
-We were using Opera browser as old-fashion, maybe it's using Craken engine. 
+Finally we could find main reason who are making disconnection. The websocket of MQTT paho javascript library is sending data with wrong hexadecimal at the specific time, for example, a value of first byte of data sending is changed as wrong right before websocket.send(data). I tried to find suspect who are changing the value and found it was a browser which runs client. 
+
+We were using Opera browser as old-fashion(=version), maybe it's using Craken engine. 
 Anyway we could fix disconnection when it turned off <font color=red>JIT</font> option.
+
+
+<center><font size=10 color=red> JIT </font> was suspect.</center>
